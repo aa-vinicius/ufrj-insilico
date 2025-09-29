@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UFRJ InSilico API - Documentação e Testes</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1>🌦️ UFRJ InSilico API</h1>
+                <p>API Rest para dados meteorológicos e resultados de modelos de ML</p>
+                <div class="status-indicator">
+                    <span class="status-dot" id="apiStatus"></span>
+                    <span id="statusText">Verificando status...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="container">
+            <ul class="nav-list">
+                <li><a href="#overview" class="nav-link active">Visão Geral</a></li>
+                <li><a href="#data-endpoints" class="nav-link">Dados Meteorológicos</a></li>
+                <li><a href="#models-endpoints" class="nav-link">Modelos ML</a></li>
+                <li><a href="#playground" class="nav-link">Playground</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main">
+        <div class="container">
+            <!-- Visão Geral -->
+            <section id="overview" class="section">
+                <h2>📋 Visão Geral</h2>
+                <div class="overview-grid">
+                    <div class="overview-card">
+                        <h3>🗺️ Geometrias Suportadas</h3>
+                        <ul>
+                            <li><strong>Point:</strong> Estações meteorológicas específicas</li>
+                            <li><strong>Polygon:</strong> Áreas de cobertura e previsão</li>
+                        </ul>
+                    </div>
+                    <div class="overview-card">
+                        <h3>📊 Tipos de Dados</h3>
+                        <ul>
+                            <li>Temperatura, Umidade, Velocidade do Vento</li>
+                            <li>Precipitação, Pressão Atmosférica</li>
+                            <li>Previsões e Alertas Meteorológicos</li>
+                        </ul>
+                    </div>
+                    <div class="overview-card">
+                        <h3>🔬 Modelos ML</h3>
+                        <ul>
+                            <li>Previsão de Chuva</li>
+                            <li>Previsão de Temperatura</li>
+                            <li>Análise de Padrões de Vento</li>
+                            <li>Alertas de Tempo Severo</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Endpoints de Dados -->
+            <section id="data-endpoints" class="section">
+                <h2>🌡️ Endpoints de Dados Meteorológicos</h2>
+                <div class="endpoints-grid">
+                    
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="path">/data/</span>
+                        </div>
+                        <p class="endpoint-description">Lista todos os dados meteorológicos com geometrias</p>
+                        <div class="endpoint-params">
+                            <h4>Parâmetros (opcionais):</h4>
+                            <ul>
+                                <li><code>geometry_type</code>: Point ou Polygon</li>
+                                <li><code>data_type</code>: temperature, humidity, wind_speed, etc.</li>
+                            </ul>
+                        </div>
+                        <button class="btn-test" onclick="testEndpoint('/data/', 'data-result-1')">🧪 Testar</button>
+                        <div id="data-result-1" class="result-container"></div>
+                    </div>
+
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="path">/data/points</span>
+                        </div>
+                        <p class="endpoint-description">Lista apenas dados com geometria de ponto</p>
+                        <button class="btn-test" onclick="testEndpoint('/data/points', 'data-result-2')">🧪 Testar</button>
+                        <div id="data-result-2" class="result-container"></div>
+                    </div>
+
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="path">/data/polygons</span>
+                        </div>
+                        <p class="endpoint-description">Lista apenas dados com geometria de polígono</p>
+                        <button class="btn-test" onclick="testEndpoint('/data/polygons', 'data-result-3')">🧪 Testar</button>
+                        <div id="data-result-3" class="result-container"></div>
+                    </div>
+
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="path">/data/locations</span>
+                        </div>
+                        <p class="endpoint-description">Lista todas as localizações disponíveis</p>
+                        <button class="btn-test" onclick="testEndpoint('/data/locations', 'data-result-4')">🧪 Testar</button>
+                        <div id="data-result-4" class="result-container"></div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Endpoints de Modelos -->
+            <section id="models-endpoints" class="section">
+                <h2>🤖 Endpoints de Modelos ML</h2>
+                <div class="endpoints-grid">
+                    
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="path">/models/</span>
+                        </div>
+                        <p class="endpoint-description">Lista todos os resultados de modelos ML</p>
+                        <div class="endpoint-params">
+                            <h4>Parâmetros (opcionais):</h4>
+                            <ul>
+                                <li><code>geometry_type</code>: Point ou Polygon</li>
+                                <li><code>model_name</code>: nome do modelo</li>
+                            </ul>
+                        </div>
+                        <button class="btn-test" onclick="testEndpoint('/models/', 'models-result-1')">🧪 Testar</button>
+                        <div id="models-result-1" class="result-container"></div>
+                    </div>
+
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="path">/models/points</span>
+                        </div>
+                        <p class="endpoint-description">Lista previsões pontuais</p>
+                        <button class="btn-test" onclick="testEndpoint('/models/points', 'models-result-2')">🧪 Testar</button>
+                        <div id="models-result-2" class="result-container"></div>
+                    </div>
+
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="path">/models/polygons</span>
+                        </div>
+                        <p class="endpoint-description">Lista previsões de área</p>
+                        <button class="btn-test" onclick="testEndpoint('/models/polygons', 'models-result-3')">🧪 Testar</button>
+                        <div id="models-result-3" class="result-container"></div>
+                    </div>
+
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="path">/models/forecast-areas</span>
+                        </div>
+                        <p class="endpoint-description">Lista áreas de previsão</p>
+                        <button class="btn-test" onclick="testEndpoint('/models/forecast-areas', 'models-result-4')">🧪 Testar</button>
+                        <div id="models-result-4" class="result-container"></div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Playground -->
+            <section id="playground" class="section">
+                <h2>🎮 Playground - Teste Personalizado</h2>
+                <div class="playground">
+                    <div class="playground-form">
+                        <h3>Construir Requisição</h3>
+                        <div class="form-group">
+                            <label for="endpoint-select">Endpoint:</label>
+                            <select id="endpoint-select" onchange="updatePlaygroundParams()">
+                                <option value="/data/">GET /data/</option>
+                                <option value="/data/points">GET /data/points</option>
+                                <option value="/data/polygons">GET /data/polygons</option>
+                                <option value="/data/locations">GET /data/locations</option>
+                                <option value="/models/">GET /models/</option>
+                                <option value="/models/points">GET /models/points</option>
+                                <option value="/models/polygons">GET /models/polygons</option>
+                                <option value="/models/forecast-areas">GET /models/forecast-areas</option>
+                            </select>
+                        </div>
+                        <div id="params-container" class="params-container">
+                            <!-- Parâmetros serão inseridos dinamicamente -->
+                        </div>
+                        <button class="btn-test btn-large" onclick="testPlaygroundEndpoint()">🚀 Executar Teste</button>
+                    </div>
+                    <div class="playground-result">
+                        <h3>Resultado:</h3>
+                        <div id="playground-result" class="result-container large"></div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 UFRJ InSilico API - Laboratório de Meteorologia Aplicada</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="/static/script.js"></script>
+</body>
+</html>
