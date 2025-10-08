@@ -1,0 +1,17 @@
+# contexto
+Criação de endpoint para servir modelo de previsão mensal de vazão para uma estação
+
+# dados
+modelos_staging/flow/VAZÃO_FUNIL.ipynb
+modelos_staging/flow/agragado_meteo_vazao_shifted_station_19091_extended.csv
+
+# instrução
+Use para instalação das bibliotecas o venv existente na raiz do projeto.
+O notebook `VAZÃO_FUNIL.ipynb` contém a lógica de treinamento do modelo de ML que queremos implementar na API.
+Use a lógica existente no notebook para gerar os executáveis do modelo.
+Crie uma página de interface desse modelo para que eu use na apresentação ao cliente.
+Use os dados de teste referenciados no notebook como mock na interface desse modelo.
+Crie na interface uma forma de visualizar a série temporal prevista X observado somente com o conjunto de teste.
+Pegue um dos registros da série para demonstrar na interface a requisição da API.
+Use a figura `serie_temporal_v6.8.png` como base para a UI que você vai gerar para a previsão.
+O endpoint desse modelo deve responder para cada mês o valor previsto de vazão e o intervalo de incerteza.
