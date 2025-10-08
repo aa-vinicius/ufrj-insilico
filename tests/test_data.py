@@ -4,7 +4,7 @@ from app.main import app
 client = TestClient(app)
 
 def test_list_data():
-    response = client.get("/data/")
+    response = client.get("/api/data/")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
@@ -19,7 +19,7 @@ def test_list_data():
         assert "location_name" in item
 
 def test_data_point_geometry():
-    response = client.get("/data/")
+    response = client.get("/api/data/")
     data = response.json()
     
     # Encontrar um item com geometria de ponto
@@ -33,7 +33,7 @@ def test_data_point_geometry():
     assert isinstance(coordinates[1], float)  # latitude
 
 def test_data_polygon_geometry():
-    response = client.get("/data/")
+    response = client.get("/api/data/")
     data = response.json()
     
     # Encontrar um item com geometria de polígono
@@ -47,28 +47,28 @@ def test_data_polygon_geometry():
 
 def test_filter_data_by_geometry_type():
     # Testar filtro por tipo de geometria Point
-    response = client.get("/data/?geometry_type=Point")
+    response = client.get("/api/data/?geometry_type=Point")
     assert response.status_code == 200
     data = response.json()
     for item in data:
         assert item["geometry"]["type"] == "Point"
     
     # Testar filtro por tipo de geometria Polygon
-    response = client.get("/data/?geometry_type=Polygon")
+    response = client.get("/api/data/?geometry_type=Polygon")
     assert response.status_code == 200
     data = response.json()
     for item in data:
         assert item["geometry"]["type"] == "Polygon"
 
 def test_filter_data_by_type():
-    response = client.get("/data/?data_type=temperature")
+    response = client.get("/api/data/?data_type=temperature")
     assert response.status_code == 200
     data = response.json()
     for item in data:
         assert item["type"] == "temperature"
 
 def test_data_points_endpoint():
-    response = client.get("/data/points")
+    response = client.get("/api/data/points")
     assert response.status_code == 200
     data = response.json()
     assert len(data) > 0
@@ -76,7 +76,7 @@ def test_data_points_endpoint():
         assert item["geometry"]["type"] == "Point"
 
 def test_data_polygons_endpoint():
-    response = client.get("/data/polygons")
+    response = client.get("/api/data/polygons")
     assert response.status_code == 200
     data = response.json()
     assert len(data) > 0
@@ -84,7 +84,7 @@ def test_data_polygons_endpoint():
         assert item["geometry"]["type"] == "Polygon"
 
 def test_data_locations_endpoint():
-    response = client.get("/data/locations")
+    response = client.get("/api/data/locations")
     assert response.status_code == 200
     data = response.json()
     assert len(data) > 0

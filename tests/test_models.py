@@ -4,7 +4,7 @@ from app.main import app
 client = TestClient(app)
 
 def test_list_models():
-    response = client.get("/models/")
+    response = client.get("/api/models/")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
@@ -20,9 +20,9 @@ def test_list_models():
         assert "forecast_time" in item
 
 def test_models_point_geometry():
-    response = client.get("/models/")
+    response = client.get("/api/models/")
     data = response.json()
-    
+
     # Encontrar um resultado com geometria de ponto
     point_items = [item for item in data if item["geometry"]["type"] == "Point"]
     assert len(point_items) > 0
@@ -34,9 +34,9 @@ def test_models_point_geometry():
     assert isinstance(coordinates[1], float)  # latitude
 
 def test_models_polygon_geometry():
-    response = client.get("/models/")
+    response = client.get("/api/models/")
     data = response.json()
-    
+
     # Encontrar um resultado com geometria de polígono
     polygon_items = [item for item in data if item["geometry"]["type"] == "Polygon"]
     assert len(polygon_items) > 0
@@ -47,9 +47,9 @@ def test_models_polygon_geometry():
     assert len(coordinates[0]) >= 4  # Mínimo 4 pontos para fechar o polígono
 
 def test_model_forecast_structure():
-    response = client.get("/models/")
+    response = client.get("/api/models/")
     data = response.json()
-    
+
     # Verificar estrutura dos dados de previsão
     for item in data:
         assert "model" in item
@@ -59,28 +59,28 @@ def test_model_forecast_structure():
 
 def test_filter_models_by_geometry_type():
     # Testar filtro por tipo de geometria Point
-    response = client.get("/models/?geometry_type=Point")
+    response = client.get("/api/models/?geometry_type=Point")
     assert response.status_code == 200
     data = response.json()
     for item in data:
         assert item["geometry"]["type"] == "Point"
     
     # Testar filtro por tipo de geometria Polygon
-    response = client.get("/models/?geometry_type=Polygon")
+    response = client.get("/api/models/?geometry_type=Polygon")
     assert response.status_code == 200
     data = response.json()
     for item in data:
         assert item["geometry"]["type"] == "Polygon"
 
 def test_filter_models_by_name():
-    response = client.get("/models/?model_name=rain")
+    response = client.get("/api/models/?model_name=rain")
     assert response.status_code == 200
     data = response.json()
     for item in data:
         assert "rain" in item["model"].lower()
 
 def test_models_points_endpoint():
-    response = client.get("/models/points")
+    response = client.get("/api/models/points")
     assert response.status_code == 200
     data = response.json()
     assert len(data) > 0
@@ -88,7 +88,7 @@ def test_models_points_endpoint():
         assert item["geometry"]["type"] == "Point"
 
 def test_models_polygons_endpoint():
-    response = client.get("/models/polygons")
+    response = client.get("/api/models/polygons")
     assert response.status_code == 200
     data = response.json()
     assert len(data) > 0
@@ -96,7 +96,7 @@ def test_models_polygons_endpoint():
         assert item["geometry"]["type"] == "Polygon"
 
 def test_forecast_areas_endpoint():
-    response = client.get("/models/forecast-areas")
+    response = client.get("/api/models/forecast-areas")
     assert response.status_code == 200
     data = response.json()
     assert len(data) > 0
