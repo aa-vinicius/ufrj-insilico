@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelo de Previsão de Vazão - Estação Funil</title>
+    <link rel="stylesheet" href="/static/flow-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>🌊 Modelo de Previsão de Vazão - Estação Funil (19091)</h1>
+            <p>Sistema de previsão mensal usando ensemble ML (MLP + XGBoost)</p>
+            <div class="status-badge" id="modelStatus">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Verificando status...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            
+            <!-- Performance do Modelo -->
+            <section class="section">
+                <h2>📊 Performance do Modelo - Dados de Teste (2020-2023)</h2>
+                <div class="chart-container">
+                    <div id="timeSeriesChart" class="chart"></div>
+                </div>
+                <div class="metrics-grid" id="metricsGrid">
+                    <!-- Métricas serão carregadas via JavaScript -->
+                </div>
+            </section>
+
+            <!-- Previsão Interativa -->
+            <section class="section">
+                <h2>🎯 Fazer Previsão</h2>
+                <div class="prediction-container">
+                    <div class="prediction-form">
+                        <h3>Parâmetros da Previsão</h3>
+                        
+                        <!-- Parâmetros básicos -->
+                        <div class="form-group">
+                            <label for="predYear">Ano:</label>
+                            <select id="predYear">
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="predMonth">Mês:</label>
+                            <select id="predMonth">
+                                <option value="1">Janeiro</option>
+                                <option value="2">Fevereiro</option>
+                                <option value="3">Março</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Maio</option>
+                                <option value="6">Junho</option>
+                                <option value="7">Julho</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                        </div>
+
+                        <!-- Opções de previsão -->
+                        <div class="form-group">
+                            <label>
+                                <input type="radio" name="predType" value="simple" checked>
+                                Previsão Simples (usar médias históricas)
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="radio" name="predType" value="advanced">
+                                Previsão Avançada (informar dados meteorológicos)
+                            </label>
+                        </div>
+
+                        <!-- Campos avançados (ocultos por padrão) -->
+                        <div id="advancedFields" class="advanced-fields" style="display: none;">
+                            <h4>Dados Meteorológicos</h4>
+                            <div class="fields-grid">
+                                <div class="form-group">
+                                    <label for="tmin_min">Temp. Mín. (°C):</label>
+                                    <input type="number" id="tmin_min" step="0.1" placeholder="Ex: 15.9">
+                                </div>
+                                <div class="form-group">
+                                    <label for="tmax_max">Temp. Máx. (°C):</label>
+                                    <input type="number" id="tmax_max" step="0.1" placeholder="Ex: 30.8">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pr_min">Prec. Mín. (mm):</label>
+                                    <input type="number" id="pr_min" step="0.1" placeholder="Ex: 172.5">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pr_max">Prec. Máx. (mm):</label>
+                                    <input type="number" id="pr_max" step="0.1" placeholder="Ex: 269.7">
+                                </div>
+                                <div class="form-group">
+                                    <label for="y_lag1">Vazão mês anterior (m³/s):</label>
+                                    <input type="number" id="y_lag1" step="0.1" placeholder="Ex: 94.8">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Exemplo pré-definido -->
+                        <div class="form-group">
+                            <button type="button" id="loadExampleBtn" class="btn-secondary">
+                                📋 Carregar Exemplo (Jan/2023)
+                            </button>
+                        </div>
+
+                        <button type="button" id="predictBtn" class="btn-primary">
+                            🚀 Fazer Previsão
+                        </button>
+                    </div>
+
+                    <div class="prediction-result">
+                        <h3>Resultado da Previsão</h3>
+                        <div id="predictionOutput" class="prediction-output">
+                            <p class="placeholder">Faça uma previsão para ver os resultados</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Demonstração da API -->
+            <section class="section">
+                <h2>🔌 Demonstração da API</h2>
+                <div class="api-demo">
+                    <div class="api-request">
+                        <h3>Requisição</h3>
+                        <div class="request-info">
+                            <div class="method">POST</div>
+                            <div class="url">/api/flow/predict</div>
+                        </div>
+                        <pre id="requestPayload" class="code-block">
+{
+  "year": 2024,
+  "month": 1,
+  "pr_min": 172.5,
+  "pr_max": 269.7,
+  "y_lag1": 94.8
+}
+                        </pre>
+                    </div>
+                    
+                    <div class="api-response">
+                        <h3>Resposta</h3>
+                        <div class="response-status">
+                            <span class="status-code" id="responseStatus">200</span>
+                            <span class="response-time" id="responseTime">-</span>
+                        </div>
+                        <pre id="responsePayload" class="code-block">
+Faça uma previsão para ver a resposta da API
+                        </pre>
+                    </div>
+                </div>
+                
+                <div class="api-endpoints">
+                    <h3>Outros Endpoints Disponíveis</h3>
+                    <ul class="endpoints-list">
+                        <li>
+                            <strong>GET</strong> /api/flow/predict-simple?year=2024&month=1
+                            <span class="description">Previsão simples por parâmetros URL</span>
+                        </li>
+                        <li>
+                            <strong>GET</strong> /api/flow/test-data
+                            <span class="description">Dados de teste (2020-2023)</span>
+                        </li>
+                        <li>
+                            <strong>GET</strong> /api/flow/status
+                            <span class="description">Status do modelo</span>
+                        </li>
+                        <li>
+                            <strong>POST</strong> /api/flow/train
+                            <span class="description">Re-treinar modelo</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 UFRJ InSilico API - Modelo de Previsão de Vazão Mensal</p>
+            <p>Estação 19091 (Funil) • Ensemble MLP + XGBoost • Confiança: 83%</p>
+        </div>
+    </footer>
+
+    <script src="/static/flow-script.js"></script>
+</body>
+</html>
