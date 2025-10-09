@@ -8,11 +8,11 @@ let modelStatus = { is_trained: false };
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', async () => {
+    loadExample(); // Pré-preencher imediatamente com exemplo fixo
     await checkModelStatus();
     await loadTestData();
     setupEventListeners();
     renderTimeSeriesChart();
-    loadExample(); // Pré-preencher a página
 });
 
 // Verificar status do modelo
@@ -45,6 +45,9 @@ async function checkModelStatus() {
 async function loadTestData() {
     try {
         const response = await fetch(`${API_BASE}/api/models/flow/test-data`);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
         testData = await response.json();
         
         console.log('Dados de teste carregados:', testData.length, 'registros');
@@ -55,42 +58,32 @@ async function loadTestData() {
     } catch (error) {
         console.error('Erro ao carregar dados de teste:', error);
         
-        // Dados mock para demonstração
-        testData = generateMockTestData();
-        calculateAndDisplayMetrics();
+        // Exibir erro na interface
+        displayError('Erro ao carregar dados de teste', error.message);
+        testData = []; // Array vazio, sem dados mock
     }
 }
 
-// Gerar dados mock para demonstração
-function generateMockTestData() {
-    const mockData = [];
-    const baseYear = 2020;
-    
-    for (let year = 2020; year <= 2023; year++) {
-        for (let month = 1; month <= 12; month++) {
-            const observed = 50 + 40 * Math.sin((month - 1) * Math.PI / 6) + Math.random() * 20;
-            const predicted = observed + (Math.random() - 0.5) * 10;
-            const uncertainty = 15 + Math.random() * 5;
-            
-            mockData.push({
-                year,
-                month,
-                observed: Math.max(10, observed),
-                predicted: Math.max(10, predicted),
-                lower_bound: Math.max(5, predicted - uncertainty),
-                upper_bound: predicted + uncertainty,
-                obs_min: Math.max(5, observed - 15),
-                obs_max: observed + 15
-            });
-        }
-    }
-    
-    return mockData;
+
+
+// Exibir erro na interface
+function displayError(title, message) {
+    const metricsGrid = document.getElementById('metricsGrid');
+    metricsGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 2rem; text-align: center; background: #fee; border: 1px solid #fcc; border-radius: 0.5rem; color: #c33;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚠️</div>
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">${title}</div>
+            <div style="font-size: 0.9rem;">${message}</div>
+        </div>
+    `;
 }
 
 // Calcular e exibir métricas
 function calculateAndDisplayMetrics() {
-    if (testData.length === 0) return;
+    if (testData.length === 0) {
+        displayError('Métricas indisponíveis', 'Os dados de teste não puderam ser carregados da API');
+        return;
+    }
     
     const observed = testData.map(d => d.observed);
     const predicted = testData.map(d => d.predicted);
@@ -176,7 +169,17 @@ function displayMetrics(metrics) {
 // Renderizar gráfico da série temporal
 function renderTimeSeriesChart() {
     if (testData.length === 0) {
-        setTimeout(renderTimeSeriesChart, 1000);
+        // Exibir mensagem de erro no gráfico
+        const chartContainer = document.getElementById('timeSeriesChart');
+        chartContainer.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 400px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.375rem;">
+                <div style="text-align: center; color: #6c757d;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+                    <div style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem;">Dados não disponíveis</div>
+                    <div style="font-size: 0.9rem;">Não foi possível carregar os dados de teste da API</div>
+                </div>
+            </div>
+        `;
         return;
     }
     
@@ -303,12 +306,15 @@ function setupEventListeners() {
 
 // Carregar exemplo
 function loadExample() {
-    // Escolher um exemplo aleatório dos dados de teste
+    // Sempre inicializar com um exemplo baseado nos dados reais (Janeiro 2023)
+    let examplePayload;
+    
+    // Escolher um exemplo aleatório dos dados de teste se disponível
     if (testData && testData.length > 0) {
         const randomIndex = Math.floor(Math.random() * testData.length);
         const testRecord = testData[randomIndex];
         
-        const examplePayload = {
+        examplePayload = {
             year: testRecord.year,
             month: testRecord.month,
             u2_min: -1.5 + Math.random() * 3, // Variação realística
@@ -343,39 +349,39 @@ function loadExample() {
             }
         });
         
-        document.getElementById('requestPayload').value = JSON.stringify(examplePayload, null, 2);
     } else {
-        // Fallback para dados padrão
-        const examplePayload = {
-            year: 2024,
-            month: 6,
-            u2_min: -1.2,
-            u2_max: 4.5,
-            tmin_min: 16.8,
-            tmin_max: 21.2,
-            tmax_min: 25.3,
-            tmax_max: 30.7,
-            rs_min: 16.4,
-            rs_max: 24.8,
-            rh_min: 62.5,
-            rh_max: 85.2,
-            eto_min: 3.1,
-            eto_max: 5.2,
+        // Usar exemplo fixo baseado nos dados reais (Janeiro 2023) quando não há dados disponíveis
+        console.warn('Dados de teste não disponíveis, usando exemplo fixo');
+        examplePayload = {
+            year: 2023,
+            month: 1,
+            u2_min: -2.9,
+            u2_max: 5.0,
+            tmin_min: 16.5,
+            tmin_max: 22.5,
+            tmax_min: 24.8,
+            tmax_max: 31.2,
+            rs_min: 15.1,
+            rs_max: 25.2,
+            rh_min: 61.2,
+            rh_max: 88.7,
+            eto_min: 3.2,
+            eto_max: 5.8,
             pr_min: 0.0,
-            pr_max: 180.5,
-            y_lag1: 95.6,
-            y_lag2: 87.3,
-            y_lag3: 102.1,
-            y_rm3: 95.0,
-            pr_lag1: 65.2,
-            pr_lag2: 78.9,
-            pr_lag3: 42.1,
-            pr_sum3: 186.2,
-            pr_api3: 89.4
+            pr_max: 356.0,
+            y_lag1: 172.43,
+            y_lag2: 179.47,
+            y_lag3: 90.92,
+            y_rm3: 147.61,
+            pr_lag1: 42.5,
+            pr_lag2: 83.5,
+            pr_lag3: 45.2,
+            pr_sum3: 171.2,
+            pr_api3: 104.9
         };
-        
-        document.getElementById('requestPayload').value = JSON.stringify(examplePayload, null, 2);
     }
+    
+    document.getElementById('requestPayload').value = JSON.stringify(examplePayload, null, 2);
 }
 
 // Fazer previsão
