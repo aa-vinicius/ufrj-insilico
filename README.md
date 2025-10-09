@@ -185,13 +185,13 @@ curl -X POST "http://localhost:8000/api/models/flow/predict" \
 
 ### Performance do Modelo
 
-Métricas calculadas no conjunto de teste (2020-2023):
+Métricas calculadas no conjunto de teste (2020-2023, 47 amostras):
 
-- **MAE**: ~25.4 m³/s (Erro Absoluto Médio)
-- **RMSE**: ~35.8 m³/s (Raiz do Erro Quadrático Médio)
-- **R²**: ~0.85 (Coeficiente de Determinação)
-- **NSE**: ~0.84 (Nash-Sutcliffe Efficiency)
-- **Cobertura**: ~83% (Observações dentro do intervalo de predição)
+- **MAE**: 31.31 m³/s (Erro Absoluto Médio)
+- **RMSE**: 44.59 m³/s (Raiz do Erro Quadrático Médio)
+- **R²**: 0.646 (Coeficiente de Determinação)
+- **NSE**: 0.646 (Nash-Sutcliffe Efficiency)
+- **Cobertura**: 80.9% (Observações dentro do intervalo de predição)
 
 ### Parâmetros de Filtro
 
