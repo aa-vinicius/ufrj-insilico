@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadTestData();
     setupEventListeners();
     renderTimeSeriesChart();
+    loadExample(); // Pré-preencher a página
 });
 
 // Verificar status do modelo
@@ -185,34 +186,24 @@ function renderTimeSeriesChart() {
     const traces = [
         {
             x: dates,
-            y: testData.map(d => d.upper_bound),
-            type: 'scatter',
-            mode: 'lines',
-            fill: 'tonexty',
-            fillcolor: 'rgba(255, 165, 0, 0.3)',
-            line: { color: 'transparent' },
-            name: 'Intervalo Superior',
-            hoverinfo: 'skip'
-        },
-        {
-            x: dates,
             y: testData.map(d => d.lower_bound),
             type: 'scatter',
             mode: 'lines',
             fill: 'none',
             line: { color: 'transparent' },
             name: 'Intervalo Inferior',
-            hoverinfo: 'skip'
+            hoverinfo: 'skip',
+            showlegend: false
         },
         {
             x: dates,
-            y: testData.map(d => d.obs_max),
+            y: testData.map(d => d.upper_bound),
             type: 'scatter',
             mode: 'lines',
             fill: 'tonexty',
-            fillcolor: 'rgba(128, 128, 128, 0.3)',
+            fillcolor: 'rgba(255, 165, 0, 0.3)',
             line: { color: 'transparent' },
-            name: 'Obs Max',
+            name: 'Incerteza (previsão)',
             hoverinfo: 'skip'
         },
         {
@@ -223,6 +214,18 @@ function renderTimeSeriesChart() {
             fill: 'none',
             line: { color: 'transparent' },
             name: 'Obs Min',
+            hoverinfo: 'skip',
+            showlegend: false
+        },
+        {
+            x: dates,
+            y: testData.map(d => d.obs_max),
+            type: 'scatter',
+            mode: 'lines',
+            fill: 'tonexty',
+            fillcolor: 'rgba(128, 128, 128, 0.3)',
+            line: { color: 'transparent' },
+            name: 'Min/max (observado)',
             hoverinfo: 'skip'
         },
         {
@@ -300,102 +303,136 @@ function setupEventListeners() {
 
 // Carregar exemplo
 function loadExample() {
-    document.getElementById('predYear').value = '2023';
-    document.getElementById('predMonth').value = '1';
-    document.querySelector('input[name="predType"][value="advanced"]').checked = true;
-    document.getElementById('advancedFields').style.display = 'block';
-    
-    // Preencher campos com exemplo
-    document.getElementById('tmin_min').value = '15.9';
-    document.getElementById('tmax_max').value = '30.8';
-    document.getElementById('pr_min').value = '172.5';
-    document.getElementById('pr_max').value = '269.7';
-    document.getElementById('y_lag1').value = '94.8';
+    // Escolher um exemplo aleatório dos dados de teste
+    if (testData && testData.length > 0) {
+        const randomIndex = Math.floor(Math.random() * testData.length);
+        const testRecord = testData[randomIndex];
+        
+        const examplePayload = {
+            year: testRecord.year,
+            month: testRecord.month,
+            u2_min: -1.5 + Math.random() * 3, // Variação realística
+            u2_max: 3.0 + Math.random() * 4,
+            tmin_min: 14.0 + Math.random() * 6,
+            tmin_max: 20.0 + Math.random() * 5,
+            tmax_min: 23.0 + Math.random() * 4,
+            tmax_max: 29.0 + Math.random() * 6,
+            rs_min: 12.0 + Math.random() * 8,
+            rs_max: 22.0 + Math.random() * 8,
+            rh_min: 55.0 + Math.random() * 20,
+            rh_max: 75.0 + Math.random() * 20,
+            eto_min: 2.5 + Math.random() * 2,
+            eto_max: 4.5 + Math.random() * 2,
+            pr_min: 0.0,
+            pr_max: 50.0 + Math.random() * 300,
+            y_lag1: 50.0 + Math.random() * 200,
+            y_lag2: 50.0 + Math.random() * 200,
+            y_lag3: 50.0 + Math.random() * 200,
+            y_rm3: 50.0 + Math.random() * 200,
+            pr_lag1: 10.0 + Math.random() * 100,
+            pr_lag2: 10.0 + Math.random() * 100,
+            pr_lag3: 10.0 + Math.random() * 100,
+            pr_sum3: 30.0 + Math.random() * 300,
+            pr_api3: 50.0 + Math.random() * 150
+        };
+        
+        // Arredondar valores para 1 casa decimal
+        Object.keys(examplePayload).forEach(key => {
+            if (typeof examplePayload[key] === 'number' && key !== 'year' && key !== 'month') {
+                examplePayload[key] = Math.round(examplePayload[key] * 10) / 10;
+            }
+        });
+        
+        document.getElementById('requestPayload').value = JSON.stringify(examplePayload, null, 2);
+    } else {
+        // Fallback para dados padrão
+        const examplePayload = {
+            year: 2024,
+            month: 6,
+            u2_min: -1.2,
+            u2_max: 4.5,
+            tmin_min: 16.8,
+            tmin_max: 21.2,
+            tmax_min: 25.3,
+            tmax_max: 30.7,
+            rs_min: 16.4,
+            rs_max: 24.8,
+            rh_min: 62.5,
+            rh_max: 85.2,
+            eto_min: 3.1,
+            eto_max: 5.2,
+            pr_min: 0.0,
+            pr_max: 180.5,
+            y_lag1: 95.6,
+            y_lag2: 87.3,
+            y_lag3: 102.1,
+            y_rm3: 95.0,
+            pr_lag1: 65.2,
+            pr_lag2: 78.9,
+            pr_lag3: 42.1,
+            pr_sum3: 186.2,
+            pr_api3: 89.4
+        };
+        
+        document.getElementById('requestPayload').value = JSON.stringify(examplePayload, null, 2);
+    }
 }
 
 // Fazer previsão
 async function makePrediction() {
     const predictBtn = document.getElementById('predictBtn');
-    const predictionOutput = document.getElementById('predictionOutput');
+    const responsePayload = document.getElementById('responsePayload');
+    const responseStatus = document.getElementById('responseStatus');
+    const responseTime = document.getElementById('responseTime');
     
-    // Desabilitar botão e mostrar loading
     predictBtn.disabled = true;
-    predictBtn.innerHTML = '<span class="loading">Prevendo...</span>';
-    predictionOutput.innerHTML = '<div class="loading">Processando previsão...</div>';
+    predictBtn.innerHTML = '<span class="loading">Testando...</span>';
+    responsePayload.textContent = 'Processando requisição...';
+    responseStatus.textContent = '---';
+    responseTime.textContent = '---';
     
     try {
-        const year = parseInt(document.getElementById('predYear').value);
-        const month = parseInt(document.getElementById('predMonth').value);
-        const predType = document.querySelector('input[name="predType"]:checked').value;
+        const url = `${API_BASE}/api/models/flow/predict`;
         
-        let url, payload;
-        
-        if (predType === 'simple') {
-            // Previsão simples via GET
-            url = `${API_BASE}/api/models/flow/predict?year=${year}&month=${month}`;
-            
-            const startTime = performance.now();
-            const response = await fetch(url);
-            const endTime = performance.now();
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const result = await response.json();
-            
-            displayPredictionResult(result);
-            updateAPIDemo('GET', url, null, result, Math.round(endTime - startTime));
-            
-        } else {
-            // Previsão avançada via POST
-            url = `${API_BASE}/api/models/flow/predict`;
-            payload = {
-                year,
-                month
-            };
-            
-            // Adicionar campos preenchidos
-            const fields = ['tmin_min', 'tmax_max', 'pr_min', 'pr_max', 'y_lag1'];
-            fields.forEach(field => {
-                const input = document.getElementById(field);
-                if (input && input.value) {
-                    payload[field] = parseFloat(input.value);
-                }
-            });
-            
-            const startTime = performance.now();
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-            const endTime = performance.now();
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const result = await response.json();
-            
-            displayPredictionResult(result);
-            updateAPIDemo('POST', url, payload, result, Math.round(endTime - startTime));
+        // Pegar payload do textarea editável
+        let payload;
+        try {
+            const payloadText = document.getElementById('requestPayload').value;
+            payload = JSON.parse(payloadText);
+        } catch (e) {
+            throw new Error(`JSON inválido: ${e.message}`);
         }
+        
+        const startTime = performance.now();
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const endTime = performance.now();
+        const responseTimeMs = Math.round(endTime - startTime);
+        
+        // Atualizar interface
+        responseStatus.textContent = response.status;
+        responseTime.textContent = `${responseTimeMs}ms`;
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            responsePayload.textContent = errorText;
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        responsePayload.textContent = JSON.stringify(result, null, 2);
         
     } catch (error) {
         console.error('Erro na previsão:', error);
-        predictionOutput.innerHTML = `
-            <div class="prediction-card" style="background: #fef2f2; border-color: #fecaca;">
-                <div style="color: #dc2626; font-weight: 600;">Erro na Previsão</div>
-                <div style="color: #7f1d1d; margin-top: 0.5rem;">${error.message}</div>
-            </div>
-        `;
+        responseStatus.textContent = 'ERROR';
+        responseTime.textContent = '---';
+        responsePayload.textContent = `Erro: ${error.message}`;
     } finally {
-        // Re-habilitar botão
         predictBtn.disabled = false;
-        predictBtn.innerHTML = '🚀 Fazer Previsão';
+        predictBtn.innerHTML = '🚀 Testar API';
     }
 }
 

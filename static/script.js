@@ -4,7 +4,7 @@ const API_BASE_URL = window.location.origin;
 // Verificar status da API
 async function checkApiStatus() {
     try {
-        const response = await fetch(`${API_BASE_URL}/data/`);
+    const response = await fetch(`${API_BASE_URL}/api/data/`);
         const statusDot = document.getElementById('apiStatus');
         const statusText = document.getElementById('statusText');
         
@@ -30,7 +30,7 @@ async function testEndpoint(endpoint, resultId) {
     
     try {
         const startTime = performance.now();
-        const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    const response = await fetch(`${API_BASE_URL}${endpoint}`);
         const endTime = performance.now();
         const responseTime = Math.round(endTime - startTime);
         
@@ -68,7 +68,7 @@ function updatePlaygroundParams() {
     let paramsHtml = '';
     
     // Definir parâmetros disponíveis para cada endpoint
-    if (endpoint === '/data/' || endpoint === '/models/') {
+    if (endpoint === '/api/data/' || endpoint === '/api/models/') {
         paramsHtml = `
             <div class="form-group">
                 <label for="geometry-type">Tipo de Geometria:</label>
@@ -80,7 +80,7 @@ function updatePlaygroundParams() {
             </div>
         `;
         
-        if (endpoint === '/data/') {
+    if (endpoint === '/api/data/') {
             paramsHtml += `
                 <div class="form-group">
                     <label for="data-type">Tipo de Dado:</label>
@@ -96,7 +96,7 @@ function updatePlaygroundParams() {
             `;
         }
         
-        if (endpoint === '/models/') {
+    if (endpoint === '/api/models/') {
             paramsHtml += `
                 <div class="form-group">
                     <label for="model-name">Nome do Modelo:</label>
@@ -124,16 +124,16 @@ async function testPlaygroundEndpoint() {
     const params = new URLSearchParams();
     
     // Construir query string com parâmetros
-    if (endpoint === '/data/' || endpoint === '/models/') {
+    if (endpoint === '/api/data/' || endpoint === '/api/models/') {
         const geometryType = document.getElementById('geometry-type')?.value;
         if (geometryType) params.append('geometry_type', geometryType);
         
-        if (endpoint === '/data/') {
+    if (endpoint === '/api/data/') {
             const dataType = document.getElementById('data-type')?.value;
             if (dataType) params.append('data_type', dataType);
         }
         
-        if (endpoint === '/models/') {
+    if (endpoint === '/api/models/') {
             const modelName = document.getElementById('model-name')?.value;
             if (modelName) params.append('model_name', modelName);
         }

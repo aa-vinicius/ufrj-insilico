@@ -31,103 +31,8 @@
                 <div class="metrics-grid" id="metricsGrid">
                     <!-- Métricas serão carregadas via JavaScript -->
                 </div>
-            </section>
-
-            <!-- Previsão Interativa -->
-            <section class="section">
-                <h2>🎯 Fazer Previsão</h2>
-                <div class="prediction-container">
-                    <div class="prediction-form">
-                        <h3>Parâmetros da Previsão</h3>
-                        
-                        <!-- Parâmetros básicos -->
-                        <div class="form-group">
-                            <label for="predYear">Ano:</label>
-                            <select id="predYear">
-                                <option value="2024">2024</option>
-                                <option value="2025">2025</option>
-                                <option value="2026">2026</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="predMonth">Mês:</label>
-                            <select id="predMonth">
-                                <option value="1">Janeiro</option>
-                                <option value="2">Fevereiro</option>
-                                <option value="3">Março</option>
-                                <option value="4">Abril</option>
-                                <option value="5">Maio</option>
-                                <option value="6">Junho</option>
-                                <option value="7">Julho</option>
-                                <option value="8">Agosto</option>
-                                <option value="9">Setembro</option>
-                                <option value="10">Outubro</option>
-                                <option value="11">Novembro</option>
-                                <option value="12">Dezembro</option>
-                            </select>
-                        </div>
-
-                        <!-- Opções de previsão -->
-                        <div class="form-group">
-                            <label>
-                                <input type="radio" name="predType" value="simple" checked>
-                                Previsão Simples (usar médias históricas)
-                            </label>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>
-                                <input type="radio" name="predType" value="advanced">
-                                Previsão Avançada (informar dados meteorológicos)
-                            </label>
-                        </div>
-
-                        <!-- Campos avançados (ocultos por padrão) -->
-                        <div id="advancedFields" class="advanced-fields" style="display: none;">
-                            <h4>Dados Meteorológicos</h4>
-                            <div class="fields-grid">
-                                <div class="form-group">
-                                    <label for="tmin_min">Temp. Mín. (°C):</label>
-                                    <input type="number" id="tmin_min" step="0.1" placeholder="Ex: 15.9">
-                                </div>
-                                <div class="form-group">
-                                    <label for="tmax_max">Temp. Máx. (°C):</label>
-                                    <input type="number" id="tmax_max" step="0.1" placeholder="Ex: 30.8">
-                                </div>
-                                <div class="form-group">
-                                    <label for="pr_min">Prec. Mín. (mm):</label>
-                                    <input type="number" id="pr_min" step="0.1" placeholder="Ex: 172.5">
-                                </div>
-                                <div class="form-group">
-                                    <label for="pr_max">Prec. Máx. (mm):</label>
-                                    <input type="number" id="pr_max" step="0.1" placeholder="Ex: 269.7">
-                                </div>
-                                <div class="form-group">
-                                    <label for="y_lag1">Vazão mês anterior (m³/s):</label>
-                                    <input type="number" id="y_lag1" step="0.1" placeholder="Ex: 94.8">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Exemplo pré-definido -->
-                        <div class="form-group">
-                            <button type="button" id="loadExampleBtn" class="btn-secondary">
-                                📋 Carregar Exemplo (Jan/2023)
-                            </button>
-                        </div>
-
-                        <button type="button" id="predictBtn" class="btn-primary">
-                            🚀 Fazer Previsão
-                        </button>
-                    </div>
-
-                    <div class="prediction-result">
-                        <h3>Resultado da Previsão</h3>
-                        <div id="predictionOutput" class="prediction-output">
-                            <p class="placeholder">Faça uma previsão para ver os resultados</p>
-                        </div>
-                    </div>
+                <div class="chart-legend">
+                    <p><strong>Legenda:</strong> O gráfico mostra 4 componentes principais - dados observados (linha contínua preta), previsões do modelo (linha tracejada vermelha), banda de incerteza das previsões (área amarela) e faixa min/max dos dados observados originais do CSV (área cinza).</p>
                 </div>
             </section>
 
@@ -139,19 +44,46 @@
                         <h3>Requisição</h3>
                         <div class="request-info">
                             <div class="method">POST</div>
-                            <div class="url">/api/flow/predict</div>
+                            <div class="url">/api/models/flow/predict</div>
                         </div>
-                        <pre id="requestPayload" class="code-block">
-{
-  "year": 2024,
+                        <div class="form-container">
+                            <div class="form-group">
+                                <button type="button" id="loadExampleBtn" class="btn-secondary">
+                                    📋 Carregar exemplo diferente
+                                </button>
+                                <button type="button" id="predictBtn" class="btn-primary">
+                                    🚀 Testar API
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="requestPayload" class="json-editor" rows="30">{
+  "year": 2023,
   "month": 1,
-  "pr_min": 172.5,
-  "pr_max": 269.7,
-  "y_lag1": 94.8
-}
-                        </pre>
+  "u2_min": -2.9,
+  "u2_max": 5.0,
+  "tmin_min": 16.5,
+  "tmin_max": 22.5,
+  "tmax_min": 24.8,
+  "tmax_max": 31.2,
+  "rs_min": 15.1,
+  "rs_max": 25.2,
+  "rh_min": 61.2,
+  "rh_max": 88.7,
+  "eto_min": 3.2,
+  "eto_max": 5.8,
+  "pr_min": 0.0,
+  "pr_max": 356.0,
+  "y_lag1": 172.43,
+  "y_lag2": 179.47,
+  "y_lag3": 90.92,
+  "y_rm3": 147.61,
+  "pr_lag1": 42.5,
+  "pr_lag2": 83.5,
+  "pr_lag3": 45.2,
+  "pr_sum3": 171.2,
+  "pr_api3": 104.9
+}</textarea>
                     </div>
-                    
                     <div class="api-response">
                         <h3>Resposta</h3>
                         <div class="response-status">
@@ -159,31 +91,9 @@
                             <span class="response-time" id="responseTime">-</span>
                         </div>
                         <pre id="responsePayload" class="code-block">
-Faça uma previsão para ver a resposta da API
+Clique em "Fazer Previsão" para ver a resposta da API
                         </pre>
                     </div>
-                </div>
-                
-                <div class="api-endpoints">
-                    <h3>Outros Endpoints Disponíveis</h3>
-                    <ul class="endpoints-list">
-                        <li>
-                            <strong>GET</strong> /api/flow/predict-simple?year=2024&month=1
-                            <span class="description">Previsão simples por parâmetros URL</span>
-                        </li>
-                        <li>
-                            <strong>GET</strong> /api/flow/test-data
-                            <span class="description">Dados de teste (2020-2023)</span>
-                        </li>
-                        <li>
-                            <strong>GET</strong> /api/flow/status
-                            <span class="description">Status do modelo</span>
-                        </li>
-                        <li>
-                            <strong>POST</strong> /api/flow/train
-                            <span class="description">Re-treinar modelo</span>
-                        </li>
-                    </ul>
                 </div>
             </section>
 
