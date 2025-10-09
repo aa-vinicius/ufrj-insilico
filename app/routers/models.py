@@ -14,30 +14,38 @@ router = APIRouter()
 
 # Modelos Pydantic para o modelo de vazão
 class FlowPredictionRequest(BaseModel):
-    """Modelo para requisição de previsão de vazão"""
+    """Modelo para requisição de previsão de vazão - TODAS as variáveis são obrigatórias"""
     year: int = Field(..., ge=1998, le=2030, description="Ano da previsão")
     month: int = Field(..., ge=1, le=12, description="Mês da previsão (1-12)")
     
-    # Features meteorológicas (opcionais)
-    u2_min: Optional[float] = Field(None, description="Velocidade do vento mínima (m/s)")
-    u2_max: Optional[float] = Field(None, description="Velocidade do vento máxima (m/s)")
-    tmin_min: Optional[float] = Field(None, description="Temperatura mínima (°C)")
-    tmin_max: Optional[float] = Field(None, description="Temperatura máxima mínima (°C)")
-    tmax_min: Optional[float] = Field(None, description="Temperatura máxima mínima (°C)")
-    tmax_max: Optional[float] = Field(None, description="Temperatura máxima (°C)")
-    rs_min: Optional[float] = Field(None, description="Radiação solar mínima (MJ/m²/dia)")
-    rs_max: Optional[float] = Field(None, description="Radiação solar máxima (MJ/m²/dia)")
-    rh_min: Optional[float] = Field(None, description="Umidade relativa mínima (%)")
-    rh_max: Optional[float] = Field(None, description="Umidade relativa máxima (%)")
-    eto_min: Optional[float] = Field(None, description="Evapotranspiração mínima (mm/dia)")
-    eto_max: Optional[float] = Field(None, description="Evapotranspiração máxima (mm/dia)")
-    pr_min: Optional[float] = Field(None, description="Precipitação mínima (mm)")
-    pr_max: Optional[float] = Field(None, description="Precipitação máxima (mm)")
+    # Features meteorológicas (OBRIGATÓRIAS)
+    u2_min: float = Field(..., description="Velocidade do vento mínima (m/s)")
+    u2_max: float = Field(..., description="Velocidade do vento máxima (m/s)")
+    tmin_min: float = Field(..., description="Temperatura mínima (°C)")
+    tmin_max: float = Field(..., description="Temperatura máxima mínima (°C)")
+    tmax_min: float = Field(..., description="Temperatura máxima mínima (°C)")
+    tmax_max: float = Field(..., description="Temperatura máxima (°C)")
+    rs_min: float = Field(..., description="Radiação solar mínima (MJ/m²/dia)")
+    rs_max: float = Field(..., description="Radiação solar máxima (MJ/m²/dia)")
+    rh_min: float = Field(..., description="Umidade relativa mínima (%)")
+    rh_max: float = Field(..., description="Umidade relativa máxima (%)")
+    eto_min: float = Field(..., description="Evapotranspiração mínima (mm/dia)")
+    eto_max: float = Field(..., description="Evapotranspiração máxima (mm/dia)")
+    pr_min: float = Field(..., description="Precipitação mínima (mm)")
+    pr_max: float = Field(..., description="Precipitação máxima (mm)")
     
-    # Features de lag (opcionais)
-    y_lag1: Optional[float] = Field(None, description="Vazão do mês anterior (m³/s)")
-    y_lag2: Optional[float] = Field(None, description="Vazão de 2 meses atrás (m³/s)")
-    y_lag3: Optional[float] = Field(None, description="Vazão de 3 meses atrás (m³/s)")
+    # Features de lag de vazão (OBRIGATÓRIAS)
+    y_lag1: float = Field(..., description="Vazão do mês anterior (m³/s)")
+    y_lag2: float = Field(..., description="Vazão de 2 meses atrás (m³/s)")
+    y_lag3: float = Field(..., description="Vazão de 3 meses atrás (m³/s)")
+    y_rm3: float = Field(..., description="Média móvel de 3 meses da vazão (m³/s)")
+    
+    # Features de lag de precipitação (OBRIGATÓRIAS)
+    pr_lag1: float = Field(..., description="Precipitação do mês anterior (mm)")
+    pr_lag2: float = Field(..., description="Precipitação de 2 meses atrás (mm)")
+    pr_lag3: float = Field(..., description="Precipitação de 3 meses atrás (mm)")
+    pr_sum3: float = Field(..., description="Soma de precipitação dos últimos 3 meses (mm)")
+    pr_api3: float = Field(..., description="Índice antecedente de precipitação (mm)")
 
 class FlowPredictionResponse(BaseModel):
     """Modelo para resposta de previsão de vazão"""
@@ -111,62 +119,48 @@ def list_forecast_areas():
 async def predict_flow(request: FlowPredictionRequest):
     """
     Fazer previsão de vazão para um mês específico
+    Todas as 23 variáveis de entrada são obrigatórias.
     """
     try:
-        # Se não há features, usa previsão baseada apenas na temporalidade
-        if not any([
-            request.u2_min, request.u2_max, request.tmin_min, request.tmin_max,
-            request.tmax_min, request.tmax_max, request.rs_min, request.rs_max,
-            request.rh_min, request.rh_max, request.eto_min, request.eto_max,
-            request.pr_min, request.pr_max, request.y_lag1, request.y_lag2, request.y_lag3
-        ]):
-            logger.info(f"Previsão baseada em sazonalidade para {request.month}/{request.year}")
-            prediction = flow_model.predict_month(request.year, request.month)
-        else:
-            # Cria DataFrame com features fornecidas
-            features = {
-                'year': request.year,
-                'month': request.month,
-                'u2_min': request.u2_min or np.nan,
-                'u2_max': request.u2_max or np.nan,
-                'tmin_min': request.tmin_min or np.nan,
-                'tmin_max': request.tmin_max or np.nan,
-                'tmax_min': request.tmax_min or np.nan,
-                'tmax_max': request.tmax_max or np.nan,
-                'rs_min': request.rs_min or np.nan,
-                'rs_max': request.rs_max or np.nan,
-                'rh_min': request.rh_min or np.nan,
-                'rh_max': request.rh_max or np.nan,
-                'eto_min': request.eto_min or np.nan,
-                'eto_max': request.eto_max or np.nan,
-                'pr_min': request.pr_min or np.nan,
-                'pr_max': request.pr_max or np.nan,
-                'y_lag1': request.y_lag1 or np.nan,
-                'y_lag2': request.y_lag2 or np.nan,
-                'y_lag3': request.y_lag3 or np.nan
-            }
-            
-            df = pd.DataFrame([features])
-            prediction = flow_model.predict(df)[0]
+        # Extrair todas as features do request (todas são obrigatórias agora)
+        features = {
+            'u2_min': request.u2_min,
+            'u2_max': request.u2_max,
+            'tmin_min': request.tmin_min,
+            'tmin_max': request.tmin_max,
+            'tmax_min': request.tmax_min,
+            'tmax_max': request.tmax_max,
+            'rs_min': request.rs_min,
+            'rs_max': request.rs_max,
+            'rh_min': request.rh_min,
+            'rh_max': request.rh_max,
+            'eto_min': request.eto_min,
+            'eto_max': request.eto_max,
+            'pr_min': request.pr_min,
+            'pr_max': request.pr_max,
+            'y_lag1': request.y_lag1,
+            'y_lag2': request.y_lag2,
+            'y_lag3': request.y_lag3,
+            'y_rm3': request.y_rm3,
+            'pr_lag1': request.pr_lag1,
+            'pr_lag2': request.pr_lag2,
+            'pr_lag3': request.pr_lag3,
+            'pr_sum3': request.pr_sum3,
+            'pr_api3': request.pr_api3
+        }
         
-        # Calcula intervalos de confiança baseados na variabilidade histórica
-        uncertainty = prediction * 0.15  # 15% de incerteza típica
-        lower_bound = max(0, prediction - 1.96 * uncertainty)
-        upper_bound = prediction + 1.96 * uncertainty
+        # Usar o modelo otimizado que já valida todas as variáveis
+        result = optimized_flow_model.predict_month(request.year, request.month, features)
         
         return FlowPredictionResponse(
-            year=request.year,
-            month=request.month,
-            predicted_flow=round(prediction, 2),
-            lower_bound=round(lower_bound, 2),
-            upper_bound=round(upper_bound, 2),
-            uncertainty=round(uncertainty, 2),
-            confidence_level=95.0,
-            model_components={
-                "mlp_weight": 0.6,
-                "xgboost_weight": 0.4,
-                "ensemble_method": "weighted_average"
-            }
+            year=result["year"],
+            month=result["month"],
+            predicted_flow=result["predicted_flow"],
+            lower_bound=result["lower_bound"],
+            upper_bound=result["upper_bound"],
+            uncertainty=result["uncertainty"],
+            confidence_level=result["confidence_level"],
+            model_components=result.get("model_components", {})
         )
         
     except Exception as e:
@@ -180,7 +174,7 @@ async def get_flow_test_data():
     Obter dados de teste do modelo de vazão (comparação observado vs predito)
     """
     try:
-        test_data = flow_model.get_test_data()
+        test_data = optimized_flow_model.get_test_data()
         
         return [
             TestDataResponse(
@@ -188,10 +182,10 @@ async def get_flow_test_data():
                 month=int(row['month']),
                 observed=round(row['observed'], 2),
                 predicted=round(row['predicted'], 2),
-                lower_bound=round(row['predicted'] * 0.85, 2),
-                upper_bound=round(row['predicted'] * 1.15, 2),
-                obs_min=round(row['observed'] * 0.9, 2),
-                obs_max=round(row['observed'] * 1.1, 2)
+                lower_bound=round(row['lower_bound'], 2),
+                upper_bound=round(row['upper_bound'], 2),
+                obs_min=round(row['obs_min'], 2),  
+                obs_max=round(row['obs_max'], 2)
             )
             for _, row in test_data.iterrows()
         ]
